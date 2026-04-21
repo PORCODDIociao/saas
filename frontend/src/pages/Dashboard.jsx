@@ -1,9 +1,14 @@
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import { calculateSchengenDays, calculateSchengenStatus, calculateTaxResidencyDays } from '../logic/calculators';
 import { AlertTriangle, Globe, Landmark, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import SubscriptionModal from '../components/SubscriptionModal';
 
-export default function Dashboard({ trips }) {
+export default function Dashboard({ trips, plan }) {
+  const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+
   const schengenDays = calculateSchengenDays(trips);
   const schengenStatusText = calculateSchengenStatus(trips);
   const taxData = calculateTaxResidencyDays(trips);
@@ -12,6 +17,14 @@ export default function Dashboard({ trips }) {
     if (days >= 90) return '#cf6679';
     if (days >= 75) return '#fbc02d';
     return '#66fcf1';
+  };
+
+  const handleFabClick = () => {
+    if (plan === 'FREE' && trips.length >= 3) {
+      setModalOpen(true);
+    } else {
+      navigate('/history');
+    }
   };
 
   return (
@@ -56,12 +69,6 @@ export default function Dashboard({ trips }) {
               <p className={`text-lg font-medium ${schengenDays >= 90 ? 'text-danger' : (schengenDays >= 75 ? 'text-warning' : 'text-gray-300')}`}>
                 {schengenStatusText}
               </p>
-              {schengenDays >= 75 && (
-                <div className={`mt-3 flex items-start space-x-2 text-sm p-3 rounded-xl ${schengenDays >= 90 ? 'bg-danger/10 text-danger' : 'bg-warning/10 text-warning'}`}>
-                  <AlertTriangle size={18} className="flex-shrink-0 mt-0.5" />
-                  <p>Attenzione: se superi i 90 giorni potresti incorrere in un ban dell'area Schengen.</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -94,37 +101,30 @@ export default function Dashboard({ trips }) {
                        <span className="text-white text-lg">{stat.iso_code}</span>
                        <span className={textClass}>{stat.days} <span className="text-xs text-gray-500 font-normal">/ 183 gg</span></span>
                     </div>
-                    
-                    {/* Progress Bar */}
-                    <div className="w-full h-2 bg-dark-700 outline outline-1 outline-white/5 rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full ${colorClass} transition-all duration-1000 ease-out`}
-                        style={{ width: `${pct}%` }}
-                      />
+                    <div className="w-full h-2 bg-dark-700 rounded-full overflow-hidden">
+                      <div className={`h-full ${colorClass}`} style={{ width: `${pct}%` }} />
                     </div>
-                    
-                    {stat.days >= 150 && (
-                      <p className="text-danger flex items-center text-xs mt-3 font-medium">
-                        <AlertTriangle size={12} className="mr-1" />
-                        Rischio residenza fiscale imminente!
-                      </p>
-                    )}
                   </div>
                 );
               })}
             </div>
           )}
         </div>
-
       </div>
 
-      {/* FAB: Floating Action Button */}
-      <Link 
-        to="/history"
+      <button 
+        onClick={handleFabClick}
         className="fixed bottom-8 right-8 bg-accent hover:bg-accent-hover text-dark-900 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(102,252,241,0.4)] transition-transform hover:scale-110 z-40"
       >
         <Plus size={28} strokeWidth={2.5} />
-      </Link>
+      </button>
+
+      <SubscriptionModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        plan="NOMAD"
+        customMessage="Hai raggiunto il limite di 3 viaggi del piano Free. Passa a Pro per tracciare il tuo giro del mondo senza limiti."
+      />
     </div>
   );
 }

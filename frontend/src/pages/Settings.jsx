@@ -1,6 +1,6 @@
-import { Globe2 } from 'lucide-react';
+import { Globe2, Code } from 'lucide-react';
 
-export default function Settings() {
+export default function Settings({ plan, setPlan }) {
   return (
     <div className="max-w-3xl mx-auto pb-12">
       <div className="mb-8">
@@ -8,7 +8,7 @@ export default function Settings() {
         <p className="text-gray-400 text-sm">Configura il tuo passaporto base e le preferenze.</p>
       </div>
 
-      <div className="bg-dark-800 border border-dark-700 p-6 sm:p-8 rounded-3xl">
+      <div className="bg-dark-800 border border-dark-700 p-6 sm:p-8 rounded-3xl mb-8">
         <div className="flex items-center space-x-4 mb-6 pb-6 border-b border-dark-700/50">
           <div className="p-3 bg-dark-700 rounded-2xl text-accent">
             <Globe2 size={24} />
@@ -32,9 +32,6 @@ export default function Settings() {
               <option value="CA">Canada</option>
               <option value="AU">Australia</option>
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-            </div>
           </div>
 
           <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl">
@@ -50,6 +47,20 @@ export default function Settings() {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* DEV TOOLS per simulare i Piani */}
+      <div className="bg-dark-900 border border-danger/30 p-6 rounded-3xl relative overflow-hidden">
+        <div className="flex items-center space-x-3 mb-4 text-danger">
+          <Code size={20} />
+          <h3 className="font-bold">Developer Tools</h3>
+        </div>
+        <p className="text-sm text-gray-400 mb-4">Usa questo controller per simulare il passaggio di piano e testare i blocchi dell'interfaccia senza toccare il database.</p>
+        <div className="flex flex-wrap gap-3">
+          <button onClick={() => setPlan('FREE')} className={`px-4 py-2 rounded-lg font-bold text-sm border ${plan === 'FREE' ? 'bg-gray-700 text-white border-gray-600' : 'border-dark-700 text-gray-500 hover:bg-dark-800'}`}>FREE</button>
+          <button onClick={() => setPlan('NOMAD')} className={`px-4 py-2 rounded-lg font-bold text-sm border ${plan === 'NOMAD' ? 'bg-primary/20 text-primary border-primary/50' : 'border-dark-700 text-gray-500 hover:bg-dark-800'}`}>NOMAD</button>
+          <button onClick={() => setPlan('BUSINESS')} className={`px-4 py-2 rounded-lg font-bold text-sm border ${plan === 'BUSINESS' ? 'bg-accent/20 text-accent border-accent/50' : 'border-dark-700 text-gray-500 hover:bg-dark-800'}`}>BUSINESS</button>
+        </div>
       </div>
     </div>
   );
