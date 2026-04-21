@@ -1,8 +1,10 @@
 import { differenceInDays, isAfter, isBefore, parseISO, subDays } from 'date-fns';
 
+// EU Countries exempt from Schengen 90/180 rule (citizens living in EU)
+export const EU_COUNTRIES = ['IT', 'FR', 'DE', 'ES', 'PT', 'GR', 'NL', 'BE', 'LU', 'SE', 'FI', 'DK', 'AT', 'IE', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'RO', 'BG', 'HR', 'CY', 'MT'];
+
 /**
  * Calculates the total days spent in Schengen zone over the last 180 days.
- * The window is [targetDate - 180 days, targetDate].
  */
 export const calculateSchengenDays = (trips, targetDate = new Date()) => {
   const target = typeof targetDate === 'string' ? parseISO(targetDate) : targetDate;
@@ -28,15 +30,23 @@ export const calculateSchengenDays = (trips, targetDate = new Date()) => {
 
 /**
  * Provides a highly readable string describing the Schengen status.
+ * Accepts nationality: if EU citizen, they are exempt.
  */
-export const calculateSchengenStatus = (trips, targetDate = new Date()) => {
+export const calculateSchengenStatus = (trips, targetDate = new Date(), nationality = null) => {
+  // EU passport holders are NOT subject to 90/180 rule in Schengen
+  if (nationality && EU_COUNTRIES.includes(nationality.toUpperCase())) {
+    return 'Con il tuo passaporto EU sei esente dalla regola 90/180 in Area Schengen.';
+  }
+
   const daysUsed = calculateSchengenDays(trips, targetDate);
   const remaining = 90 - daysUsed;
   
   if (remaining < 0) {
-    return `Stato critico! Hai sforato di ${Math.abs(remaining)} giorni il limite dei 90.`;
+    return `OVERSTAY! Hai sforato di ${Math.abs(remaining)} giorni il limite dei 90. Esci dall'Area Schengen immediatamente.`;
+  } else if (remaining <= 15) {
+    return `ATTENZIONE: Ti rimangono solo ${remaining} giorni Schengen. Pianifica subito l'uscita.`;
   }
-  return `Hai usato ${daysUsed} giorni su 90. Puoi restare ancora ${remaining} giorni.`;
+  return `Sei al sicuro. Hai ancora ${remaining} giorni disponibili su 90 in Area Schengen.`;
 };
 
 /**
