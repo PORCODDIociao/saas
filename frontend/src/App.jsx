@@ -1,21 +1,23 @@
-import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Home, History, FileText, Settings as SettingsIcon, Menu, X, Rocket, Crown, BarChart2, Folder, LogOut } from 'lucide-react';
 import { useState } from 'react';
 
 import Dashboard from './pages/Dashboard';
 import TripHistory from './pages/History';
 import Settings from './pages/Settings';
-import Landing from './pages/Landing';
 import Auth from './pages/Auth';
 import Pricing from './pages/Pricing';
 import Finance from './pages/Finance';
 import Documents from './pages/Documents';
 import SubscriptionModal from './components/SubscriptionModal';
+import { ReportModal } from './components/ReportModal';
 import { useTrips } from './hooks/useTrips';
 import { usePlan } from './hooks/usePlan';
 import { useAuth } from './hooks/useAuth';
 
 function Sidebar({ isMobileOpen, setIsMobileOpen, plan, user, logout, trips }) {
+  const [reportOpen, setReportOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const location = useLocation();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMsg, setModalMsg] = useState('');
@@ -34,8 +36,11 @@ function Sidebar({ isMobileOpen, setIsMobileOpen, plan, user, logout, trips }) {
       setModalMsg("Questa funzione richiede il piano Business. Fai l'upgrade per generare report PDF professionali per il tuo commercialista.");
       setModalOpen(true);
     } else {
-      // Trigger stampa come PDF
-      window.print();
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        setReportOpen(true);
+      }, 1500);
     }
   };
 
@@ -163,6 +168,21 @@ function Sidebar({ isMobileOpen, setIsMobileOpen, plan, user, logout, trips }) {
         plan="BUSINESS"
         customMessage={modalMsg}
       />
+
+      <ReportModal
+        isOpen={reportOpen}
+        onClose={() => setReportOpen(false)}
+        trips={trips}
+        user={user}
+      />
+
+      {/* TOAST */}
+      {showToast && (
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[90] bg-dark-800 border border-accent/30 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3">
+          <div className="w-5 h-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+          <span className="font-medium text-sm">Generazione report professionale in corso...</span>
+        </div>
+      )}
     </>
   );
 }

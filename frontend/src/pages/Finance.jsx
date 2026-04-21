@@ -8,17 +8,23 @@ export default function Finance({ plan, trips }) {
   const { transactions, addTransaction, deleteTransaction, totals, CURRENCY_RATES } = useFinance();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ type: 'income', description: '', amount: '', currency: 'EUR', category: 'Freelance' });
+  const [customCategory, setCustomCategory] = useState('');
 
   const CATEGORIES = {
-    income: ['Freelance', 'Stipendio', 'Affitti', 'Investimenti', 'Altro'],
-    expenses: ['Alloggio', 'Voli', 'Cibo', 'Trasporti', 'Abbonamenti', 'Tasse', 'Altro'],
+    income: ['Freelance', 'Stipendio', 'Affitti', 'Investimenti', 'Altro...'],
+    expenses: ['Alloggio', 'Voli', 'Cibo', 'Trasporti', 'Abbonamenti', 'Tasse', 'Altro...'],
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.description || !form.amount) return;
-    addTransaction(form);
+    // Se l'utente ha scelto "Altro..." usiamo il campo custom
+    const finalCategory = (form.category === 'Altro...' && customCategory.trim())
+      ? customCategory.trim()
+      : form.category;
+    addTransaction({ ...form, category: finalCategory });
     setForm({ type: 'income', description: '', amount: '', currency: 'EUR', category: 'Freelance' });
+    setCustomCategory('');
     setShowForm(false);
   };
 
@@ -101,7 +107,7 @@ export default function Finance({ plan, trips }) {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-gray-500 mt-4">* Consulta sempre un commercialista per la tua situazione specifica. Questa è una stima orientativa.</p>
+            <p className="text-xs text-gray-500 mt-4">* Consulta sempre un commercialista. Questa è una stima orientativa.</p>
           </div>
         )
       ) : (
@@ -143,10 +149,22 @@ export default function Finance({ plan, trips }) {
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Categoria</label>
-                <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}
+                <select value={form.category} onChange={e => { setForm({...form, category: e.target.value}); setCustomCategory(''); }}
                   className="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-white focus:border-accent outline-none">
                   {(CATEGORIES[form.type === 'income' ? 'income' : 'expenses']).map(c => <option key={c}>{c}</option>)}
                 </select>
+                {/* Campo libero se "Altro..." è selezionato */}
+                {form.category === 'Altro...' && (
+                  <input
+                    type="text"
+                    value={customCategory}
+                    onChange={e => setCustomCategory(e.target.value)}
+                    placeholder="Specifica la categoria..."
+                    className="w-full mt-2 bg-dark-900 border border-accent/50 rounded-xl px-4 py-2.5 text-white focus:border-accent outline-none text-sm"
+                    required
+                    autoFocus
+                  />
+                )}
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Importo *</label>
